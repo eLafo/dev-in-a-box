@@ -92,6 +92,16 @@ RUN homesick clone eLafo/git-dot-files &&\
 ARG ruby_versions=${ruby_global}
 RUN echo $ruby_versions | xargs -n 1 rbenv install -s
 
+# NODE DEV
+ENV NVM_DIR=/root/.nvm
+ENV PATH="${NVM_DIR}:$PATH"
+ARG node_global=node
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && \
+      . $NVM_DIR/nvm.sh && \
+      nvm install ${node_global} && \
+      nvm alias default node
+
 ADD entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
 CMD [ "zsh" ]
