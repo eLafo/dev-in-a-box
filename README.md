@@ -52,11 +52,11 @@ docker run --rm -it -v rubies:/root/.nvm -v $(PWD):/workspace elafo/dev_in_docke
 
 |Build arg|Description|Default value|
 |---------|:----------|:------------|
-| `ruby_global`|ruby version to be installed globally using rbenv|2.7.0|
-|`ruby_versions`| extra ruby versions to be installed using rbenv|none|
+| `ruby_version`|ruby version to be installed globally using rbenv|2.7.0|
+|`node_version`|node version to be installed and used by default using nvm|latest|
 
 ## Example
 
 ```bash
-docker build --build-arg ruby_global=2.6.0 --build-arg ruby_versions="2.5.0 2.4.0" -t dev:local .
+docker build --build-arg ruby_version=2.6.0 --build-arg=node_version="lts" -t dev:local .
 ```

@@ -2,7 +2,6 @@ FROM ubuntu:20.04
 LABEL maintainer="eLafo"
 
 # BASE
-# SHELL [ "/bin/bash", "-l", "-c" ]
 ## BUILD ARGS
 ARG workspace=/workspace
 ENV WORKSPACE=$workspace
@@ -40,39 +39,27 @@ RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && ap
       libgdbm-dev \
       libdb-dev
 
-## INSTALL rbenv and global ruby
+## INSTALL rbenv and rubies
+ARG ruby_version="2.7.0"
 ENV RBENV_ROOT=/root/.rbenv
 ENV PATH="${RBENV_ROOT}/shims:${RBENV_ROOT}/bin:$PATH"
-RUN echo $PATH
-RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
-
 ENV RUBY_CONFIGURE_OPTS --disable-install-doc
 
-ARG ruby_global="2.7.0"
-RUN rbenv install ${ruby_global}
-RUN rbenv global ${ruby_global}
+RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash && \
+      rbenv install ${ruby_version} && \
+      rbenv global ${ruby_version}
 
 ## INSTALL HOMESICK FOR DOTFILES
 RUN gem install homesick
 
-## INSTALL CHROME
-ENV DEBIAN_FRONTEND=noninteractive
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-  && apt-get update \
-  && apt-get install -y google-chrome-stable \
-  && apt-get clean
-
 ## INSTALL ZSH
 RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
       fonts-powerline \
-      zsh
-
-RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+      zsh && \
+    chsh -s $(which zsh)
 
 RUN homesick clone eLafo/zsh-dot-files && \
     homesick symlink --force=true zsh-dot-files && \
-    chsh -s $(which zsh) && \
     $(which zsh) -c "source ~/.zshrc"
 
 ## INSTALL AND SETUP VIM
@@ -88,18 +75,22 @@ RUN homesick clone https://github.com/eLafo/vim-dot-files.git &&\
 RUN homesick clone eLafo/git-dot-files &&\
     homesick symlink git-dot-files
 
-# DEV RUBY
-ARG ruby_versions=${ruby_global}
-RUN echo $ruby_versions | xargs -n 1 rbenv install -s
+## INSTALL CHROME
+ENV DEBIAN_FRONTEND=noninteractive
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+  && apt-get update \
+  && apt-get install -y google-chrome-stable \
+  && apt-get clean
 
 # NODE DEV
 ENV NVM_DIR=/root/.nvm
 ENV PATH="${NVM_DIR}:$PATH"
-ARG node_global=node
+ARG node_version=node
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && \
       . $NVM_DIR/nvm.sh && \
-      nvm install ${node_global} && \
+      nvm install ${node_version} && \
       nvm alias default node
 
 ADD entrypoint.sh /root/entrypoint.sh
