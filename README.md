@@ -6,6 +6,7 @@ This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 - Git with [my personal dot files](https://github.com/elafo/git-dot-files)
 - Vim with [my personal dot files](https://github.com/elafo/vim-dot-files)
 - [rbenv](https://github.com/rbenv/rbenv) for ruby development
+- [nvm](https://github.com/nvm-sh/nvm) for node development
 
 # How to use this image
 
@@ -20,7 +21,7 @@ If you want to bind mount your workspace you can bind it to /workspace
 docker run --rm -it -v $(PWD):/workspace elafo/dev_in_docker
 ```
 
-### Automatic installation of ruby version and persisting rubies
+## Ruby development
 If you bind mount a directory with a `.ruby-version` file in its root, the proper version will be installed at start.
 
 If this is the case, then you might want to mount a volume to persist the rubies, so it is already installed next time you start your container
@@ -28,12 +29,23 @@ If this is the case, then you might want to mount a volume to persist the rubies
 ```bash
 docker run --rm -it -v rubies:/root/.rbenv -v $(PWD):/workspace elafo/dev_in_docker
 ```
+
+## Node development
+If you bind mount a directory with a `.nvmrc` file in its root, the proper version will be installed at start.
+
+If this is the case, then you might want to mount a volume to persist the nodes, so it is already installed next time you start your container
+
+```bash
+docker run --rm -it -v rubies:/root/.nvm -v $(PWD):/workspace elafo/dev_in_docker
+```
+
 ## Volumes
 
 |Path|Description|
 |----|:----------|
 |`/workspace`|main folder for developing|
 |`/root/.rbenv`|rbenv folder where rubies and gems are installed|
+|`/root/.nvm`|nvm folder where nodes are installed|
 
 # Building the image
 ## Args
