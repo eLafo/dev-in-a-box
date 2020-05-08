@@ -1,9 +1,8 @@
-ARG ruby_version=2.5.8
-
-FROM ruby:${ruby_version}
+FROM ubuntu:20.04
 LABEL maintainer="eLafo"
 
 # BASE
+# SHELL [ "/bin/bash", "-l", "-c" ]
 ## BUILD ARGS
 ARG workspace=/workspace
 ENV WORKSPACE=$workspace
@@ -22,10 +21,42 @@ ENV LC_ALL en_US.UTF-8
 RUN mkdir ${WORKSPACE}
 WORKDIR ${WORKSPACE}
 
+## LIBRARIES AND TOOLS
+RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
+      git \
+      curl \
+      wget \
+      libpq-dev \
+      autoconf \
+      bison \
+      build-essential \
+      libssl-dev \
+      libyaml-dev \
+      libreadline6-dev \
+      zlib1g-dev \
+      libncurses5-dev \
+      libffi-dev \
+      libgdbm6 \
+      libgdbm-dev \
+      libdb-dev
+
+## INSTALL rbenv and global ruby
+ENV RBENV_ROOT=/root/.rbenv
+ENV PATH="${RBENV_ROOT}/shims:${RBENV_ROOT}/bin:$PATH"
+RUN echo $PATH
+RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+
+ENV RUBY_CONFIGURE_OPTS --disable-install-doc
+
+ARG ruby_global="2.7.0"
+RUN rbenv install ${ruby_global}
+RUN rbenv global ${ruby_global}
+
 ## INSTALL HOMESICK FOR DOTFILES
 RUN gem install homesick
 
 ## INSTALL CHROME
+ENV DEBIAN_FRONTEND=noninteractive
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
   && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
   && apt-get update \
@@ -46,7 +77,8 @@ RUN homesick clone eLafo/zsh-dot-files && \
 
 ## INSTALL AND SETUP VIM
 RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
-      vim
+      vim \
+      ack-grep
 
 RUN homesick clone https://github.com/eLafo/vim-dot-files.git &&\
     homesick symlink vim-dot-files &&\
@@ -56,12 +88,10 @@ RUN homesick clone https://github.com/eLafo/vim-dot-files.git &&\
 RUN homesick clone eLafo/git-dot-files &&\
     homesick symlink git-dot-files
 
-# RUBY
-## BUILD ARGS
-ARG bundler_version=1.17.3
-ENV BUNDLER_VERSION=$bundler_version
+# DEV RUBY
+ARG ruby_versions=${ruby_global}
+RUN echo $ruby_versions | xargs -n 1 rbenv install -s
 
-## BUNDLER
-RUN gem install bundler --version ${BUNDLER_VERSION}         
-
+ADD entrypoint.sh /root/entrypoint.sh
+ENTRYPOINT [ "/root/entrypoint.sh" ]
 CMD [ "zsh" ]
