@@ -93,6 +93,15 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | b
       nvm install ${node_version} && \
       nvm alias default node
 
+# PYTHON DEV
+ENV PYENV_ROOT=/root/.pyenv
+ENV PATH="$PYENV_ROOT/bin:$PATH"
+ARG python_version=3.8.2
+RUN curl https://pyenv.run | bash && \
+    pyenv install ${python_version} && \
+    pyenv global ${python_version}
+
+
 ADD entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
 CMD [ "zsh" ]
