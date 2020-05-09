@@ -1,4 +1,4 @@
-# docker_dev
+# Dev in a box
 
 This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 
@@ -11,14 +11,14 @@ This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 # How to use this image
 
 ```bash
-docker run --rm -it elafo/dev_in_docker
+docker run --rm -it elafo/dev-in-a-box
 ```
 
 ## Mounting workspaces
 If you want to bind mount your workspace you can bind it to /workspace
 
 ```bash
-docker run --rm -it -v $(PWD):/workspace elafo/dev_in_docker
+docker run --rm -it -v $(PWD):/workspace elafo/dev-in-a-box
 ```
 
 ## Ruby development
@@ -27,7 +27,7 @@ If you bind mount a directory with a `.ruby-version` file in its root, the prope
 If this is the case, then you might want to mount a volume to persist the rubies, so it is already installed next time you start your container
 
 ```bash
-docker run --rm -it -v rubies:/root/.rbenv -v $(PWD):/workspace elafo/dev_in_docker
+docker run --rm -it -v rubies:/root/.rbenv -v $(PWD):/workspace elafo/dev-in-a-box
 ```
 
 ## Node development
@@ -36,7 +36,7 @@ If you bind mount a directory with a `.nvmrc` file in its root, the proper versi
 If this is the case, then you might want to mount a volume to persist the nodes, so it is already installed next time you start your container
 
 ```bash
-docker run --rm -it -v rubies:/root/.nvm -v $(PWD):/workspace elafo/dev_in_docker
+docker run --rm -it -v rubies:/root/.nvm -v $(PWD):/workspace elafo/dev-in-a-box
 ```
 
 ## Volumes
