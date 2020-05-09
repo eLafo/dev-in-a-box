@@ -7,6 +7,7 @@ This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 - Vim with [my personal dot files](https://github.com/elafo/vim-dot-files)
 - [rbenv](https://github.com/rbenv/rbenv) for ruby development
 - [nvm](https://github.com/nvm-sh/nvm) for node development
+- [pyenv](https://github.com/pyenv/pyenv) for python development
 
 # How to use this image
 
