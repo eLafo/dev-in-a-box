@@ -5,6 +5,7 @@ This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 - ZSH with [my personal dot files](https://github.com/elafo/zsh-dot-files)
 - Git with [my personal dot files](https://github.com/elafo/git-dot-files)
 - Vim with [my personal dot files](https://github.com/elafo/vim-dot-files)
+- Docker and docker-compose
 - [rbenv](https://github.com/rbenv/rbenv) for ruby development
 - [nvm](https://github.com/nvm-sh/nvm) for node development
 - [pyenv](https://github.com/pyenv/pyenv) for python development
@@ -48,6 +49,13 @@ If this is the case, then you might want to mount a volume to persist the pyenvs
 ```bash
 docker run --rm -it -v pyenvs:/root/.pyenv -v $(PWD):/workspace elafo/dev-in-a-box
 ```
+
+## Using docker with host socket
+You need to mount your host socket as usual:
+
+```bash
+docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock
+```
 ## Volumes
 
 |Path|Description|
@@ -56,6 +64,7 @@ docker run --rm -it -v pyenvs:/root/.pyenv -v $(PWD):/workspace elafo/dev-in-a-b
 |`/root/.rbenv`|rbenv folder where rubies and gems are installed|
 |`/root/.nvm`|nvm folder where nodes are installed|
 |`/root/.pyenv`|pyenv folder where pyenvs are installed|
+|`/var/run/docker.sock`|docker socket|
 
 # Building the image
 ## Args
