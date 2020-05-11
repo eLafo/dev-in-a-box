@@ -3,6 +3,7 @@ LABEL maintainer="eLafo"
 
 # BASE
 ## BUILD ARGS
+SHELL ["/bin/bash", "-c"]
 ARG workspace=/workspace
 ENV WORKSPACE=$workspace
 
@@ -38,6 +39,11 @@ RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && ap
       libgdbm6 \
       libgdbm-dev \
       libdb-dev
+
+# asdf
+ENV ASDF_DIR=/root/.asdf
+ARG asdf_version=0.7.8
+RUN git clone https://github.com/asdf-vm/asdf.git ${ASDF_DIR}/.asdf --branch v${asdf_version}
 
 ## INSTALL rbenv and rubies
 ARG ruby_version="2.7.0"
@@ -118,6 +124,17 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
 RUN curl -L "https://github.com/docker/compose/releases/download/1.25.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose && \
     docker-compose version
+
+# PHP
+ARG php_version=7.4.5
+
+
+RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
+      libxml2-dev pkg-config libcurl4-openssl-dev libpng-dev re2c libsqlite3-dev libonig-dev libzip-dev locate
+RUN . ${ASDF_DIR}/.asdf/asdf.sh && \
+      asdf plugin add php https://github.com/asdf-community/asdf-php.git && \
+      asdf install php ${php_version} && \
+      asdf global php ${php_version}
 
 ADD entrypoint.sh /root/entrypoint.sh
 ENTRYPOINT [ "/root/entrypoint.sh" ]
