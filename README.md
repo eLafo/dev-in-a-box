@@ -9,6 +9,7 @@ This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 - [rbenv](https://github.com/rbenv/rbenv) for ruby development
 - [nvm](https://github.com/nvm-sh/nvm) for node development
 - [pyenv](https://github.com/pyenv/pyenv) for python development
+- [asdf](https://github.com/asdf-vm/asdf) and [asdf-php plugin](https://github.com/asdf-community/asdf-php) for php development
 
 # How to use this image
 
@@ -50,6 +51,14 @@ If this is the case, then you might want to mount a volume to persist the pyenvs
 docker run --rm -it -v pyenvs:/root/.pyenv -v $(PWD):/workspace elafo/dev-in-a-box
 ```
 
+## PHP development using asdf and asdf-php
+If you bind mount a directory with a `.tool-versions` file in its root it will install the proper versions.
+
+If this is the case, then you might want to mount a volume to persist the pyenvs, so it is already installed next time you start your container
+
+```bash
+docker run --rm -it -v asdf:/root/.asdf -v $(PWD):/workspace elafo/dev-in-a-box
+```
 ## Using docker with host socket
 You need to mount your host socket as usual:
 
@@ -64,6 +73,7 @@ docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock
 |`/root/.rbenv`|rbenv folder where rubies and gems are installed|
 |`/root/.nvm`|nvm folder where nodes are installed|
 |`/root/.pyenv`|pyenv folder where pyenvs are installed|
+|`/root/.asdf`|asdf folder where shims are installed|
 |`/var/run/docker.sock`|docker socket|
 
 # Building the image
@@ -74,9 +84,10 @@ docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock
 | `ruby_version`|ruby version to be installed globally using rbenv|2.7.0|
 |`node_version`|node version to be installed and used by default using nvm|latest|
 |`python_version`|python version to be installed and used globally using pyenv|3.8.2|
+|`php_version`|php version to be installed and used globally using asf-php|7.4.5|
 
 ## Example
 
 ```bash
-docker build --build-arg ruby_version=2.6.0 --build-arg=node_version="lts" --build-arg python_version=3.8.0 -t dev:local .
+docker build --build-arg ruby_version=2.6.0 --build-arg=node_version="lts" --build-arg python_version=3.8.0 --build-arg php_version=7.4.1 -t dev:local .
 ```
