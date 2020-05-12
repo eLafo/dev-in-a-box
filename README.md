@@ -39,7 +39,12 @@ You might want to use a volume to persist different versions between sessions:
 ```bash
 docker run --rm -it -v asdf:/root/.asdf -v $(PWD):/workspace elafo/dev-in-a-box
 ```
+## Sharing your ssh credentials
+You need to bind mount your ssh directory:
 
+```bash
+docker run --rm -it -v ~/.ssh:/root/.ssh elafo/dev-in-a-box
+```
 ## Using docker with host socket
 You need to mount your host socket as usual:
 
@@ -53,6 +58,7 @@ docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock elafo/dev-in-a-
 |`/workspace`|main folder for developing|
 |`/root/.asdf`|asdf folder where shims are installed|
 |`/var/run/docker.sock`|docker socket|
+|`/root/.ssh`|ssh keys|
 
 # Building the image
 ## Args
