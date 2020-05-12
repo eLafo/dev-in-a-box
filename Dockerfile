@@ -3,7 +3,7 @@ LABEL maintainer="eLafo"
 
 # BASE
 ## BUILD ARGS
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-l", "-c"]
 ARG workspace=/workspace
 ENV WORKSPACE=$workspace
 
@@ -40,47 +40,6 @@ RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && ap
       libgdbm-dev \
       libdb-dev
 
-# asdf
-ENV ASDF_DIR=/root/.asdf
-ARG asdf_version=0.7.8
-RUN git clone https://github.com/asdf-vm/asdf.git ${ASDF_DIR}/.asdf --branch v${asdf_version}
-
-## INSTALL rbenv and rubies
-ARG ruby_version="2.7.0"
-ENV RBENV_ROOT=/root/.rbenv
-ENV PATH="${RBENV_ROOT}/shims:${RBENV_ROOT}/bin:$PATH"
-ENV RUBY_CONFIGURE_OPTS --disable-install-doc
-
-RUN curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash && \
-      rbenv install ${ruby_version} && \
-      rbenv global ${ruby_version}
-
-## INSTALL HOMESICK FOR DOTFILES
-RUN gem install homesick
-
-## INSTALL ZSH
-RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
-      fonts-powerline \
-      zsh && \
-    chsh -s $(which zsh)
-
-RUN homesick clone eLafo/zsh-dot-files && \
-    homesick symlink --force=true zsh-dot-files && \
-    $(which zsh) -c "source ~/.zshrc"
-
-## INSTALL AND SETUP VIM
-RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
-      vim \
-      ack-grep
-
-RUN homesick clone https://github.com/eLafo/vim-dot-files.git &&\
-    homesick symlink vim-dot-files &&\
-    exec vim -c ":PluginInstall" -c "qall"
-
-## CONFIGURE GIT
-RUN homesick clone eLafo/git-dot-files &&\
-    homesick symlink git-dot-files
-
 ## INSTALL CHROME
 ENV DEBIAN_FRONTEND=noninteractive
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
@@ -88,24 +47,6 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
   && apt-get update \
   && apt-get install -y google-chrome-stable \
   && apt-get clean
-
-# NODE DEV
-ENV NVM_DIR=/root/.nvm
-ENV PATH="${NVM_DIR}:$PATH"
-ARG node_version=node
-
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && \
-      . $NVM_DIR/nvm.sh && \
-      nvm install ${node_version} && \
-      nvm alias default node
-
-# PYTHON DEV
-ENV PYENV_ROOT=/root/.pyenv
-ENV PATH="$PYENV_ROOT/bin:$PATH"
-ARG python_version=3.8.2
-RUN curl https://pyenv.run | bash && \
-    pyenv install ${python_version} && \
-    pyenv global ${python_version}
 
 # DOCKER
 RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
@@ -125,17 +66,77 @@ RUN curl -L "https://github.com/docker/compose/releases/download/1.25.5/docker-c
     chmod +x /usr/local/bin/docker-compose && \
     docker-compose version
 
+# ASDF
+ENV ASDF_DIR=/root/.asdf
+ARG asdf_version=0.7.8
+RUN git clone https://github.com/asdf-vm/asdf.git ${ASDF_DIR} --branch v${asdf_version}
+RUN echo ". ${ASDF_DIR}/asdf.sh" >> ~/.bash_profile
+
+## INSTALL asdf-ruby and global ruby
+ARG ruby_version
+ENV RUBY_CONFIGURE_OPTS --disable-install-doc
+RUN asdf plugin add ruby
+RUN [[ ! -z "$ruby_version" ]] && \
+      asdf install ruby ${ruby_version} && asdf local ruby ${ruby_version} || \
+      echo "No asdf ruby installed"
+
+# NODE DEV
+ARG node_version
+RUN asdf plugin add nodejs && \
+    . ${ASDF_DIR}/plugins/nodejs/bin/import-release-team-keyring
+RUN [[ ! -z "$node_version" ]] && \
+      asdf install nodejs ${node_version} && asdf local nodejs ${node_version} || \
+      echo "No asdf node installed"
+
+# PYTHON DEV
+ARG python_version
+RUN asdf plugin add python && \
+    apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
+      libsqlite3-dev libbz2-dev
+RUN [[ ! -z "$python_version" ]] && \
+      asdf install python ${python_version} && asdf local python ${python_version} || \
+      echo "No asdf python installed"
+
 # PHP
-ARG php_version=7.4.5
-
-
+ARG php_version
 RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
-      libxml2-dev pkg-config libcurl4-openssl-dev libpng-dev re2c libsqlite3-dev libonig-dev libzip-dev locate
-RUN . ${ASDF_DIR}/.asdf/asdf.sh && \
-      asdf plugin add php https://github.com/asdf-community/asdf-php.git && \
-      asdf install php ${php_version} && \
-      asdf global php ${php_version}
+      libxml2-dev pkg-config libcurl4-openssl-dev libpng-dev re2c libsqlite3-dev libonig-dev libzip-dev locate && \
+    asdf plugin add php https://github.com/asdf-community/asdf-php.git
+RUN [[ ! -z "$php_version" ]] && \
+      asdf install php ${php_version} && asdf local php ${php_version} || \
+      echo "No asdf php installed"
+
+## INSTALL HOMESICK
+RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
+      ruby && \
+    asdf global ruby system && \
+    gem install homesick
+
+## INSTALL ZSH
+RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
+      fonts-powerline \
+      zsh && \
+    chsh -s $(which zsh)
+RUN homesick clone eLafo/zsh-dot-files && \
+    homesick symlink --force=true zsh-dot-files && \
+    $(which zsh) -c "source ~/.zshrc"
+
+## INSTALL AND SETUP VIM
+RUN apt-get update -qq && mkdir -p /usr/share/man/man1 /usr/share/man/man7 && apt-get install -y \
+      vim \
+      ack-grep
+
+RUN homesick clone https://github.com/eLafo/vim-dot-files.git &&\
+    homesick symlink vim-dot-files &&\
+    exec vim -c ":PluginInstall" -c "qall"
+
+## CONFIGURE GIT
+RUN homesick clone eLafo/git-dot-files &&\
+    homesick symlink git-dot-files
+
+ADD fonts/* /usr/share/fonts/truetype/MesloLGS/
+RUN fc-cache -fv
 
 ADD entrypoint.sh /root/entrypoint.sh
-ENTRYPOINT [ "/root/entrypoint.sh" ]
+ENTRYPOINT [ "/bin/bash", "-l", "/root/entrypoint.sh" ]
 CMD [ "zsh" ]

@@ -6,10 +6,7 @@ This is my personal dev environment. It is based on ubuntu 20.04 and uses:
 - Git with [my personal dot files](https://github.com/elafo/git-dot-files)
 - Vim with [my personal dot files](https://github.com/elafo/vim-dot-files)
 - Docker and docker-compose
-- [rbenv](https://github.com/rbenv/rbenv) for ruby development
-- [nvm](https://github.com/nvm-sh/nvm) for node development
-- [pyenv](https://github.com/pyenv/pyenv) for python development
-- [asdf](https://github.com/asdf-vm/asdf) and [asdf-php plugin](https://github.com/asdf-community/asdf-php) for php development
+- [asdf](https://github.com/asdf-vm/asdf) and [asdf-php plugin](https://github.com/asdf-community/asdf-php) for development
 
 # How to use this image
 
@@ -24,55 +21,36 @@ If you want to bind mount your workspace you can bind it to /workspace
 docker run --rm -it -v $(PWD):/workspace elafo/dev-in-a-box
 ```
 
-## Ruby development using rbenv
-If you bind mount a directory with a `.ruby-version` file in its root, the proper version will be installed at start.
+## Supported languages via asdf
 
-If this is the case, then you might want to mount a volume to persist the rubies, so it is already installed next time you start your container
+Versions are automatically installed if a `.tool-versions` file is in the root of the project like described [here](https://asdf-vm.com/#/core-configuration?id=tool-versions)
 
-```bash
-docker run --rm -it -v rubies:/root/.rbenv -v $(PWD):/workspace elafo/dev-in-a-box
-```
+Legacy files are supported when available
 
-## Node development using nvm
-If you bind mount a directory with a `.nvmrc` file in its root, the proper version will be installed at start.
+|languaje|legacy file|
+|----|:----------|
+|ruby|`.ruby-version`|
+|python|`.python-version`|
+|node|`.node-version`|
+|php|N/A|
 
-If this is the case, then you might want to mount a volume to persist the nodes, so it is already installed next time you start your container
-
-```bash
-docker run --rm -it -v rubies:/root/.nvm -v $(PWD):/workspace elafo/dev-in-a-box
-```
-
-## Python development using pyenv
-If you bind mount a directory with a `.python-version` file in its root, the proper version will be installed at start.
-
-If this is the case, then you might want to mount a volume to persist the pyenvs, so it is already installed next time you start your container
-
-```bash
-docker run --rm -it -v pyenvs:/root/.pyenv -v $(PWD):/workspace elafo/dev-in-a-box
-```
-
-## PHP development using asdf and asdf-php
-If you bind mount a directory with a `.tool-versions` file in its root it will install the proper versions.
-
-If this is the case, then you might want to mount a volume to persist the pyenvs, so it is already installed next time you start your container
+You might want to use a volume to persist different versions between sessions:
 
 ```bash
 docker run --rm -it -v asdf:/root/.asdf -v $(PWD):/workspace elafo/dev-in-a-box
 ```
+
 ## Using docker with host socket
 You need to mount your host socket as usual:
 
 ```bash
-docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock
+docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock elafo/dev-in-a-box
 ```
 ## Volumes
 
 |Path|Description|
 |----|:----------|
 |`/workspace`|main folder for developing|
-|`/root/.rbenv`|rbenv folder where rubies and gems are installed|
-|`/root/.nvm`|nvm folder where nodes are installed|
-|`/root/.pyenv`|pyenv folder where pyenvs are installed|
 |`/root/.asdf`|asdf folder where shims are installed|
 |`/var/run/docker.sock`|docker socket|
 
@@ -81,10 +59,10 @@ docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock
 
 |Build arg|Description|Default value|
 |---------|:----------|:------------|
-| `ruby_version`|ruby version to be installed globally using rbenv|2.7.0|
-|`node_version`|node version to be installed and used by default using nvm|latest|
-|`python_version`|python version to be installed and used globally using pyenv|3.8.2|
-|`php_version`|php version to be installed and used globally using asf-php|7.4.5|
+| `ruby_version`|ruby version to be installed globally using rbenv|none|
+|`node_version`|node version to be installed and used by default using nvm|none|
+|`python_version`|python version to be installed and used globally using pyenv|none|
+|`php_version`|php version to be installed and used globally using asf-php|none|
 
 ## Example
 
